@@ -1,0 +1,115 @@
+---
+title: "Actividad4"
+author: "Berenice Juarez Gonzalez"
+date: "2025-05-21"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+```
+
+INTRODUCCIÓN
+
+La deserción estudiantil representa un desafío crítico para las instituciones educativas. Comprender qué factores están asociados al abandono puede ayudar a implementar políticas de apoyo académico más efectivas.
+
+Este análisis tiene como objetivo explorar un conjunto de datos reales de estudiantes, identificando posibles patrones y variables que influyen en la deserción, con especial énfasis en el rendimiento académico previo.
+
+EXPLORACION Y LIMPIEZA DE DATOS
+
+Carga de Datos
+
+```{r}
+# Cargar archivo CSV con separador ";"
+data <- read.csv("data.csv", sep = ";")
+
+# Vista general de los primeros registros
+head(data)
+
+```
+
+Estructura y Resumen
+
+```{r}
+# Estructura de los datos
+str(data)
+
+# Estadísticas generales
+summary(data)
+
+```
+
+Revisión de valores NA
+```{r}
+# Recuento de valores NA por columna
+total_na <- colSums(is.na(data))
+kable(as.data.frame(total_na), caption = "Valores faltantes por columna")
+```
+
+Limpieza de Datos
+```{r}
+# Eliminamos columnas irrelevantes (por ejemplo, Nacionality)
+data <- data %>% select(-c(Nacionality))
+
+# Creamos una variable con el promedio de calificaciones anteriores
+data <- data %>% mutate(Promedio_Nota_Previa = rowMeans(select(., starts_with("Curricular.units")), na.rm = TRUE))
+
+```
+
+VISUALIZACIÓN Y ANÁLISIS 
+
+Estadísticas de notas previas 
+```{r}
+# Media y mediana de calificación previa
+mean(data$Previous.qualification..grade., na.rm = TRUE)
+median(data$Previous.qualification..grade., na.rm = TRUE)
+
+```
+
+Estudiantes que Abandonaron 
+
+```{r}
+# Filtrado de estudiantes que abandonaron
+abandonaron <- data %>% filter(Target == "Dropout")
+
+# Mostramos algunos registros
+kable(head(abandonaron), caption = "Ejemplos de estudiantes que abandonaron")
+
+```
+
+Boxplot: Calificaciones anteriores por estado final 
+
+```{r}
+ggplot(data, aes(x = Target, y = Previous.qualification..grade.)) +
+  geom_boxplot(fill = "skyblue") +
+  labs(title = "Distribución de calificaciones anteriores por estado del estudiante",
+       x = "Estado del estudiante", y = "Calificación previa") +
+  theme_minimal()
+
+```
+
+
+Interpretación: Se observa que los estudiantes con calificaciones previas más bajas tienen una mayor probabilidad de abandonar sus estudios.
+
+Histograma: Unidades curriculares aprobadas en el primer semestre
+
+```{r}
+ggplot(data, aes(x = Curricular.units.1st.sem..approved.)) +
+  geom_histogram(binwidth = 1, fill = "steelblue", color = "white") +
+  labs(title = "Unidades curriculares aprobadas en primer semestre",
+       x = "Unidades aprobadas", y = "Frecuencia") +
+  theme_minimal()
+```
+
+
+Interpretación: Muchos estudiantes aprueban entre 0 y 5 materias en el primer semestre. Este bajo rendimiento puede estar relacionado con la deserción temprana.
+
+CONCLUSIONES
+Los estudiantes con calificaciones previas más bajas y menor número de unidades curriculares aprobadas en el primer semestre son más propensos a abandonar.
+
+Las visualizaciones ayudan a identificar patrones importantes que podrían servir para establecer intervenciones académicas tempranas.
